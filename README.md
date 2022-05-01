@@ -53,10 +53,10 @@ After that it generates a simple wrapper Makefile.
     - [x] clean
     - [x] install
     - [x] distclean
+    - [x] uninstall
     - [ ] dist
     - [ ] help
     - [ ] check
     - [ ] installcheck
     - [ ] install-strip
-    - [ ] uninstall
     - [ ] distcheck

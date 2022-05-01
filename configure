@@ -279,7 +279,10 @@ distclean:
 install: all
 \tninja ${ninja_args} -C "${builddir}" install
 
-.PHONY: all clean distclean install
+uninstall:
+\tninja ${ninja_args} -C "${builddir}" uninstall
+
+.PHONY: all clean distclean install uninstall
 EOF
 
 # vim: tabstop=4 shiftwidth=4
