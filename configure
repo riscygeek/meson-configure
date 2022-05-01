@@ -1,0 +1,186 @@
+#!/bin/sh
+
+# Configure PROJ_* variables for your project.
+PROJ_NAME='meson-configure-test'
+
+# TODO:
+# - Implement parsing of meson_options.txt
+
+VERSION="0.1"
+quiet=0
+meson_args=""
+
+# Check for a program.
+check_for() {
+    [ "${quiet}" != 1 ] && printf 'checking for %s... ' "$1" >&2
+    check_for_path="$(which "$1" 2>/dev/null)" || { printf 'no\nPlease install %s.' "$1"; exit 1; }
+    [ "${quiet}" != 1 ] && printf '%s\n' "${check_for_path}" >&2
+    printf '%s\n' "${check_for_path}"
+}
+append_arg() {
+    meson_args="$(printf "%s %q\n" "${meson_args}" "$1")"
+}
+is_quiet() {
+    [ "${quiet}" = 1 ]
+}
+
+for arg; do
+    case "${arg}" in
+    -h|--help)
+        printf '`configure` configures %s.\n\n' "$NAME"
+        cat - <<EOF
+Usage: ./configure [OPTION]... [VAL=VALUE]...
+
+Configuration:
+  -h, --help              display this help and exit
+  -V, --version           display version information and exit
+  -q, --quiet, --silent   do not print \`checking ...\` messages
+
+Installation directories:
+  --prefix=PREFIX         install files in PREFIX
+
+Fine tuning of the installation directories:
+  --bindir=DIR            user executables
+  --sbindir=DIR           system admin executables
+  --libexecdir=DIR        program executables
+  --sysconfdir=DIR        read-only single-machine data
+  --sharedstatedir=DIR    modifiable architecture-independent data
+  --localstatedir=DIR     modifiable single-machine data
+  --libdir=DIR            object code libraries
+  --includedir=DIR        C header files
+  --datadir=DIR           read-only architecture-independent data
+  --infodir=DIR           info documentation
+  --localedir=DIR         locale-dependent data
+  --mandir=DIR            man documentation
+
+Optional Features:
+  --enable-FEATURE[=ARG]  include FEATURE [ARG=yes]
+  --disable-FEATURE       do not include FEATURE (same as --enable-FEATURE=no)
+  --enable-silent-rules   less verbose build output
+  --disable-silent-rules  verbose build output
+  --with-buildtype=BUILD  
+  --enable-debug          enable debugging symbols
+EOF
+        # print_features
+
+        cat - <<EOF
+
+Optional Packages:
+  --with-PACKAGE[=ARG]    use PACKAGE [ARG=yes]
+  --without-PACKAGE       do not use PACKAGE (same as --with-PACKAGE=no)
+  --with-buildtype=TYPE   set build type (one of plain, debug, debugoptimized, release, minsize)
+  --with-optimization=OPT set optimization level to OPT
+EOF
+        # print_packages
+        exit 0
+        ;;
+    -V|--version)
+        printf "meson-configure %s\n" "${VERSION}"
+        exit 0
+        ;;
+    -q|--quiet|--silent)
+        quiet=1
+        ;;
+    --prefix=*|--bindir=*|--sbindir=*|--libexecdir=*|--sysconfdir=*|--sharedstatedir=*|--localstatedir=*|--libdir=*|--includedir=*|--datadir=*|--infodir=*|--localedir=*|--mandir=*)
+        append_arg "${arg}"
+        ;;
+    --enable-silent-rules|--enable-silent-rules=yes)
+        ;;
+    --disable-silent-rules|--enable-silent-rules=no)
+        ;;
+    --enable-debug)
+        append_arg --debug
+        ;;
+    --enable-*=*)
+        option="$(printf '%s\n' "${arg}" | sed 's/^--enable-//;s/=.*$//')"
+        ac_value="$(printf '%s\n' "${arg}" | sed 's/^--enable-[^=]\+=//')"
+        case "${ac_value}" in
+        yes)
+            value=true
+            ;;
+        no)
+            value=false
+            ;;
+        *)
+            printf "configure invalid argument %s for option %s.\n" "${ac_value}" "${arg}"
+            ;;
+        esac
+        append_arg "-D${option}=${value}"
+        ;;
+    --enable-*)
+        option="$(printf '%s\n' "${arg}" | sed 's/^--enable-//')"
+        append_arg "-D${option}=true"
+        ;;
+    --disable-*)
+        option="$(printf '%s\n' "${arg}" | sed 's/^--disable-//')"
+        append_arg "-D${option}=false"
+        ;;
+    --with-buildtype=*|--with-optimization=*)
+        append_arg "$(printf "%s\n" "${arg}" | sed 's/with-//')"
+        ;;
+    --with-*=*)
+        append_arg "$(printf '%s\n' "${arg}" | sed 's/^--with-/-D/')"
+        ;;
+    --with-*)
+        option="$(printf '%s\n' "${arg}" | sed 's/^--with-//')"
+        append_arg "-D${option}=true"
+        ;;
+    --without-*)
+        option="$(printf '%s\n' "${arg}" | sed 's/^--without-//')"
+        append_arg "-D${option}=false"
+        ;;
+    -*)
+        printf "configure: invalid option: %s\n" "${arg}" >&2
+        exit 1
+        ;;
+    esac
+done
+
+
+# Make sure `which` is a valid command.
+is_quiet || printf 'checking for which... ' >&2
+if which which >/dev/null 2>&1; then
+    is_quiet || echo which >&2
+else
+    is_quiet || echo no >&2
+    # TODO: Provide a generic which implementation.
+    which() {
+        echo "Please install which."
+        exit 1
+    }
+fi
+
+# Check if a Makefile already exists.
+if [ -f Makefile ]; then
+    make full-clean >/dev/null 2>&1
+fi
+
+meson="$(check_for meson)"
+ninja="$(check_for ninja)"
+builddir="$(mktemp -d)"
+
+if is_quiet; then
+    "${meson}" setup "${builddir}" ${meson_args} >/dev/null
+else
+    "${meson}" setup "${builddir}" ${meson_args}
+fi || exit 1
+
+# Generate a wrapper Makefile.
+sed 's/\\t/\t/g' >Makefile <<EOF
+all:
+\tmeson compile -C "${builddir}"
+
+clean:
+\tninja -C "${builddir}" clean
+
+full-clean:
+\trm -rf "${builddir}"
+\trm -f Makefile
+
+install: all
+\tmeson install -C "${builddir}"
+
+.PHONY: all clean full-clean install
+EOF
+
+# vim: tabstop=4 shiftwidth=4
