@@ -58,10 +58,14 @@ as_cr_digits='0123456789'
 as_cr_alnum="${as_cr_Letters}${as_cr_digits}"
 
 
+eprintf() {
+    printf "$@" >&2
+    exit 1
+}
 # Check for a program.
 check_for() {
     [ "${quiet}" != 1 ] && printf 'checking for %s... ' "$1" >&2
-    check_for_path="$(which "$1" 2>/dev/null)" || { printf 'no\nPlease install %s.' "$1"; exit 1; }
+    check_for_path="$(which "$1" 2>/dev/null)" || { eprintf 'no\nPlease install %s.\n' "$1"; }
     [ "${quiet}" != 1 ] && printf '%s\n' "${check_for_path}" >&2
     printf '%s\n' "${check_for_path}"
 }
@@ -71,10 +75,6 @@ append_arg() {
 }
 is_quiet() {
     [ "${quiet}" = 1 ]
-}
-eprintf() {
-    printf "$@" >&2
-    exit 1
 }
 
 
@@ -163,8 +163,8 @@ EOF
     --localedir=*|\
     --mandir=*|\
     --srcdir=*)
-        option="$(echo "${arg}" | sed 's/^--\([^=]\+\)=.*$/\1/;s/-/_/g')"
-        value="$(echo "${arg}" | sed 's/^[^=]\+=\(.*\)$/\1/')"
+        option="$(printf '%s\n' "${arg}" | sed 's/^--\([^=]\+\)=.*$/\1/;s/-/_/g')"
+        value="$(printf '%s\n' "${arg}" | sed 's/^[^=]\+=\(.*\)$/\1/')"
         eval "${option}=\"$(printf "%q\n" "${value}")\""
         ;;
     --enable-silent-rules|--enable-silent-rules=yes)
@@ -277,13 +277,22 @@ else
     is_quiet || echo no >&2
     # TODO: Provide a generic `which` implementation.
     which() {
-        echo "Please install which."
-        exit 1
+        IFS=':'
+        for which_p in $PATH; do
+            which_path="${which_p}/$1"
+            if [ -x "${which_path}" ]; then
+                printf '%s\n' "${which_path}"
+                unset IFS
+                return 0
+            fi
+        done
+        unset IFS
+        return 1
     }
 fi
 
-meson="$(check_for meson)"
-ninja="$(check_for ninja)"
+meson="$(check_for meson)" || exit 1
+ninja="$(check_for ninja)" || exit 1
 
 ################################################################################
 ############################ Generating the Makefile ###########################

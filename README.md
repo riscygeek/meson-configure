@@ -12,7 +12,7 @@ After that it generates a simple wrapper Makefile.
 
 # TODO
 - [x] Basic usability
-- [ ] Provide a builtin `which` implementation
+- [x] Provide a builtin `which` implementation
 - [ ] Parse the optional meson\_options.txt for the help screen
 - [ ] Parse the name and version of the project (replace manual editing of PROJ_\* variables)
 - [x] Out-of-tree builds (eg. mkdir build; cd build; ../configure)
