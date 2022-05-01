@@ -52,9 +52,9 @@ After that it generates a simple wrapper Makefile.
     - [x] all
     - [x] clean
     - [x] install
+    - [x] distclean
     - [ ] dist
     - [ ] help
-    - [ ] full-clean -> distclean
     - [ ] check
     - [ ] installcheck
     - [ ] install-strip

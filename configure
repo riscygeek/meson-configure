@@ -256,7 +256,7 @@ builddir="$(mktemp -d)"
 ################################################################################
 
 # Check if a Makefile already exists.
-[ -f Makefile ] && make full-clean >/dev/null 2>&1
+[ -f Makefile ] && make distclean >/dev/null 2>&1
 
 if is_quiet; then
     "${meson}" setup "${builddir}" ${meson_args} >/dev/null
@@ -272,14 +272,14 @@ all:
 clean:
 \tninja ${ninja_args} -C "${builddir}" clean
 
-full-clean:
+distclean:
 \trm -rf "${builddir}"
 \trm -f Makefile
 
 install: all
 \tninja ${ninja_args} -C "${builddir}" install
 
-.PHONY: all clean full-clean install
+.PHONY: all clean distclean install
 EOF
 
 # vim: tabstop=4 shiftwidth=4
