@@ -31,6 +31,7 @@ ninja_args=""
 meson_args=""
 srcdir="$(dirname "$0")"
 builddir="_build"
+suppress_gen=0
 
 # Define the default values for installation paths.
 prefix='/usr/local'
@@ -92,6 +93,7 @@ Configuration:
   -h, --help              display this help and exit
   -V, --version           display version information and exit
   -q, --quiet, --silent   do not print \`checking ...\` messages
+  -n, --no-create         do not create output files
   --srcdir=DIR            find the sources in DIR
 
 Installation directories:
@@ -140,6 +142,10 @@ EOF
         ;;
     -q|--quiet|--silent)
         quiet=1
+        ;;
+    -n|--no-create)
+        builddir="$(mktemp -d)"
+        suppress_gen=1
         ;;
     --prefix=*|\
     --exec-prefix=*|\
@@ -283,7 +289,7 @@ ninja="$(check_for ninja)"
 ################################################################################
 
 # Check if a Makefile already exists.
-[ -f Makefile ] && make distclean >/dev/null 2>&1
+[ "${suppress_gen}" = 0 ] && [ -f Makefile ] && make distclean >/dev/null 2>&1
 
 if is_quiet; then
     "${meson}" setup "${builddir}" "${srcdir}" ${meson_args} >/dev/null
@@ -292,6 +298,7 @@ else
 fi || exit 1
 
 # Generate a wrapper Makefile.
+[ "${suppress_gen}" = 0 ] && \
 sed 's/\\t/\t/g' >Makefile <<EOF
 all:
 \tninja ${ninja_args} -C "${builddir}"
@@ -311,5 +318,7 @@ uninstall:
 
 .PHONY: all clean distclean install uninstall
 EOF
+
+[ "${suppress_gen}" = 1 ] && rm -rf "${builddir}"
 
 # vim: tabstop=4 shiftwidth=4

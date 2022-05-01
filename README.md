@@ -19,6 +19,7 @@ After that it generates a simple wrapper Makefile.
 - [ ] Allow overwriting install paths when running make (eg. `make install prefix=/bin`)
 - [ ] [config.site](https://www.gnu.org/savannah-checkouts/gnu/autoconf/manual/autoconf-2.70/html\_node/Sharing-Defaults.html)
 - [ ] configure options:
+    - [x] Allow passing environment variables (eg. `./configure CC='gcc'`)
     - [x] -h, --help
     - [x] -V, --version
     - [x] -q, --quiet, --silent
@@ -37,17 +38,16 @@ After that it generates a simple wrapper Makefile.
     - [x] --localedir=
     - [x] --mandir=
     - [x] --srcdir=
+    - [x] -n, --no-create
     - [ ] --build= (maybe not possible)
     - [ ] --host=
     - [ ] --target=
     - [ ] --program-prefix=
     - [ ] --program-suffix=
     - [ ] --program-transform-name=
-    - [ ] -n, --no-create
     - [ ] --help=short
     - [ ] --help=recursive
     - [ ] -c, --config-cache & --config-file= (if possible)
-    - [x] Allow passing environment variables (eg. `./configure CC='gcc'`)
 - [ ] Makefile rules:
     - [x] all
     - [x] clean
