@@ -301,26 +301,31 @@ fi || exit 1
 # Generate a wrapper Makefile.
 [ "${suppress_gen}" = 0 ] && \
 sed 's/\\t/\t/g' >Makefile <<EOF
+NINJA = ninja ${ninja_args} -C '${builddir}'
+
 all:
-\tninja ${ninja_args} -C "${builddir}"
+\t\$(NINJA) all
 
 clean:
-\tninja ${ninja_args} -C "${builddir}" clean
+\t\$(NINJA) clean
 
 distclean:
-\trm -rf "${builddir}"
+\trm -rf '${builddir}'
 \trm -f Makefile
 
 install: all
-\tninja ${ninja_args} -C "${builddir}" install
+\t\$(NINJA) install
 
 uninstall:
-\tninja ${ninja_args} -C "${builddir}" uninstall
+\t\$(NINJA) uninstall
 
 dist:
-\tninja ${ninja_args} -C  "${builddir}" dist
+\t\$(NINJA) dist
 
-.PHONY: all clean distclean install uninstall dist
+check:
+\t\$(NINJA) test
+
+.PHONY: all clean distclean install uninstall dist check
 EOF
 
 [ "${suppress_gen}" = 1 ] && rm -rf "${builddir}"

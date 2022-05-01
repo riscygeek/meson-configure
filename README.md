@@ -55,8 +55,8 @@ After that it generates a simple wrapper Makefile.
     - [x] distclean
     - [x] uninstall
     - [x] dist
+    - [x] check
     - [ ] help
-    - [ ] check
     - [ ] installcheck
     - [ ] install-strip
     - [ ] distcheck
