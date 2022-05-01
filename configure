@@ -22,11 +22,30 @@
 
 # Configure PROJ_* variables for your project.
 PROJ_NAME='meson-configure-test'
+PROJ_VERSION='0.1'
 
+# Internal variables.
 VERSION="0.1"
 quiet=0
 ninja_args=""
 meson_args=""
+
+# Define the default values for installation paths.
+prefix='/usr/local'
+exec_prefix='${prefix}'
+bindir='${exec_prefix}/bin'
+sbindir='${exec_prefix}/sbin'
+libexecdir='${exec_prefix}/libexec'
+sysconfdir='${prefix}/etc'
+sharedstatedir='${prefix}/com'
+localstatedir='${prefix}/var'
+libdir='${exec_prefix}/lib'
+includedir='${prefix}/include'
+datarootdir='${prefix}/share'
+datadir='${datarootdir}'
+infodir='${datarootdir}/info'
+localedir='${datarootdir}/locale'
+mandir='${datarootdir}/man'
 
 # Check for a program.
 check_for() {
@@ -35,6 +54,7 @@ check_for() {
     [ "${quiet}" != 1 ] && printf '%s\n' "${check_for_path}" >&2
     printf '%s\n' "${check_for_path}"
 }
+# Append an argument for meson.
 append_arg() {
     meson_args="$(printf "%s %q\n" "${meson_args}" "$1")"
 }
@@ -42,10 +62,15 @@ is_quiet() {
     [ "${quiet}" = 1 ]
 }
 
+
+################################################################################
+############################### Argument parsing ###############################
+################################################################################
+
 for arg; do
     case "${arg}" in
     -h|--help)
-        printf '`configure` configures %s.\n\n' "${PROJ_NAME}"
+        printf '`configure` configures %s %s.\n\n' "${PROJ_NAME}" "${PROJ_VERSION}"
         cat - <<EOF
 Usage: ./configure [OPTION]... [VAL=VALUE]...
 
@@ -56,6 +81,7 @@ Configuration:
 
 Installation directories:
   --prefix=PREFIX         install files in PREFIX
+  --exec-prefix=EPREFIX   install architecture-dependent files in EPREFIX
 
 Fine tuning of the installation directories:
   --bindir=DIR            user executables
@@ -66,6 +92,7 @@ Fine tuning of the installation directories:
   --localstatedir=DIR     modifiable single-machine data
   --libdir=DIR            object code libraries
   --includedir=DIR        C header files
+  --datarootdir=DIR       read-only arch.-independent data root
   --datadir=DIR           read-only architecture-independent data
   --infodir=DIR           info documentation
   --localedir=DIR         locale-dependent data
@@ -99,8 +126,24 @@ EOF
     -q|--quiet|--silent)
         quiet=1
         ;;
-    --prefix=*|--bindir=*|--sbindir=*|--libexecdir=*|--sysconfdir=*|--sharedstatedir=*|--localstatedir=*|--libdir=*|--includedir=*|--datadir=*|--infodir=*|--localedir=*|--mandir=*)
-        append_arg "${arg}"
+    --prefix=*|\
+    --exec-prefix=*|\
+    --bindir=*|\
+    --sbindir=*|\
+    --libexecdir=*|\
+    --sysconfdir=*|\
+    --sharedstatedir=*|\
+    --localstatedir=*|\
+    --libdir=*|\
+    --includedir=*|\
+    --datarootdir=*|\
+    --datadir=*|\
+    --infodir=*|\
+    --localedir=*|\
+    --mandir=*)
+        option="$(echo "${arg}" | sed 's/^--\([^=]\+\)=.*$/\1/;s/-/_/g')"
+        value="$(echo "${arg}" | sed 's/^[^=]\+=\(.*\)$/\1/')"
+        eval "${option}=\"$(printf "%q\n" "${value}")\""
         ;;
     --enable-silent-rules|--enable-silent-rules=yes)
         ;;
@@ -155,6 +198,41 @@ EOF
     esac
 done
 
+################################################################################
+############################ Checking the arguments ############################
+################################################################################
+
+# Resolve and check paths.
+for name in prefix exec_prefix bindir sbindir libexecdir datarootdir    \
+            datadir sysconfdir sharedstatedir localstatedir includedir  \
+            infodir libdir localedir mandir; do
+    eval "value=\$${name}"
+    # Make sure it's an absolute path, or unresolved.
+    case "${value}" in
+    [/$]*)
+        ;;
+    *)
+        printf 'configure: expected an absolute directory for --%s: %s\n' "${option}" "${value}" >&2
+        exit 1
+        ;;
+    esac
+done
+
+# Append paths to meson args.
+for name in prefix bindir sbindir libexecdir datadir sysconfdir         \
+            sharedstatedir localstatedir includedir infodir libdir      \
+            localedir mandir; do
+    # Evaluate the value.
+    eval "value=\$${name}"
+    eval "value=${value}"
+    eval "value=${value}"
+
+    append_arg "--${name}=${value}"
+done
+
+################################################################################
+############################## Checking the system #############################
+################################################################################
 
 # Make sure `which` is a valid command.
 is_quiet || printf 'checking for which... ' >&2
@@ -162,21 +240,23 @@ if which which >/dev/null 2>&1; then
     is_quiet || echo which >&2
 else
     is_quiet || echo no >&2
-    # TODO: Provide a generic which implementation.
+    # TODO: Provide a generic `which` implementation.
     which() {
         echo "Please install which."
         exit 1
     }
 fi
 
-# Check if a Makefile already exists.
-if [ -f Makefile ]; then
-    make full-clean >/dev/null 2>&1
-fi
-
 meson="$(check_for meson)"
 ninja="$(check_for ninja)"
 builddir="$(mktemp -d)"
+
+################################################################################
+############################ Generating the Makefile ###########################
+################################################################################
+
+# Check if a Makefile already exists.
+[ -f Makefile ] && make full-clean >/dev/null 2>&1
 
 if is_quiet; then
     "${meson}" setup "${builddir}" ${meson_args} >/dev/null

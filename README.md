@@ -12,6 +12,7 @@ After that it generates a simple wrapper Makefile.
 
 # TODO
 - [x] Basic usability
+- [ ] Provide a builtin `which` implementation
 - [ ] Parse the optional meson\_options.txt for the help screen
 - [ ] Parse the name and version of the project (replace manual editing of PROJ_\* variables)
 - [ ] Out-of-tree builds (eg. mkdir build; cd build; ../configure)
@@ -22,14 +23,14 @@ After that it generates a simple wrapper Makefile.
     - [x] -V, --version
     - [x] -q, --quiet, --silent
     - [x] --prefix=
-    - [ ] --exec-prefix=
-    - [x] --bindir= (needs --exec-prefix)
-    - [x] --sbindir= (needs --exec-prefix)
-    - [x] --libexecdir= (needs --exec-prefix)
+    - [x] --exec-prefix=
+    - [x] --bindir=
+    - [x] --sbindir=
+    - [x] --libexecdir=
     - [x] --sysconfdir=
     - [x] --sharedstatedir=
     - [x] --localstatedir=
-    - [x] --libdir= (needs --exec-prefix)
+    - [x] --libdir=
     - [x] --includedir=
     - [x] --datadir=
     - [x] --infodir=
