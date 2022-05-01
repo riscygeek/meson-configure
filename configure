@@ -317,7 +317,10 @@ install: all
 uninstall:
 \tninja ${ninja_args} -C "${builddir}" uninstall
 
-.PHONY: all clean distclean install uninstall
+dist:
+\tninja ${ninja_args} -C  "${builddir}" dist
+
+.PHONY: all clean distclean install uninstall dist
 EOF
 
 [ "${suppress_gen}" = 1 ] && rm -rf "${builddir}"
