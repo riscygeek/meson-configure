@@ -29,6 +29,8 @@ VERSION="0.1"
 quiet=0
 ninja_args=""
 meson_args=""
+srcdir="$(dirname "$0")"
+builddir="_build"
 
 # Define the default values for installation paths.
 prefix='/usr/local'
@@ -140,7 +142,8 @@ EOF
     --datadir=*|\
     --infodir=*|\
     --localedir=*|\
-    --mandir=*)
+    --mandir=*|\
+    --srcdir=*)
         option="$(echo "${arg}" | sed 's/^--\([^=]\+\)=.*$/\1/;s/-/_/g')"
         value="$(echo "${arg}" | sed 's/^[^=]\+=\(.*\)$/\1/')"
         eval "${option}=\"$(printf "%q\n" "${value}")\""
@@ -202,6 +205,9 @@ done
 ############################ Checking the arguments ############################
 ################################################################################
 
+# TODO: Properly check if $0 = $srcdir/configure
+[ -f "${srcdir}/configure" ] || { printf 'configure: Invalid source directory: %s\n' "${srcdir}"; exit 1; }
+
 # Resolve and check paths.
 for name in prefix exec_prefix bindir sbindir libexecdir datarootdir    \
             datadir sysconfdir sharedstatedir localstatedir includedir  \
@@ -249,7 +255,6 @@ fi
 
 meson="$(check_for meson)"
 ninja="$(check_for ninja)"
-builddir="$(mktemp -d)"
 
 ################################################################################
 ############################ Generating the Makefile ###########################
@@ -259,9 +264,9 @@ builddir="$(mktemp -d)"
 [ -f Makefile ] && make distclean >/dev/null 2>&1
 
 if is_quiet; then
-    "${meson}" setup "${builddir}" ${meson_args} >/dev/null
+    "${meson}" setup "${builddir}" "${srcdir}" ${meson_args} >/dev/null
 else
-    "${meson}" setup "${builddir}" ${meson_args}
+    "${meson}" setup "${builddir}" "${srcdir}" ${meson_args}
 fi || exit 1
 
 # Generate a wrapper Makefile.

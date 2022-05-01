@@ -15,7 +15,7 @@ After that it generates a simple wrapper Makefile.
 - [ ] Provide a builtin `which` implementation
 - [ ] Parse the optional meson\_options.txt for the help screen
 - [ ] Parse the name and version of the project (replace manual editing of PROJ_\* variables)
-- [ ] Out-of-tree builds (eg. mkdir build; cd build; ../configure)
+- [x] Out-of-tree builds (eg. mkdir build; cd build; ../configure)
 - [ ] Allow overwriting install paths when running make (eg. `make install prefix=/bin`)
 - [ ] [config.site](https://www.gnu.org/savannah-checkouts/gnu/autoconf/manual/autoconf-2.70/html\_node/Sharing-Defaults.html)
 - [ ] configure options:
@@ -36,6 +36,7 @@ After that it generates a simple wrapper Makefile.
     - [x] --infodir=
     - [x] --localedir=
     - [x] --mandir=
+    - [x] --srcdir=
     - [ ] --build= (maybe not possible)
     - [ ] --host=
     - [ ] --target=
@@ -43,7 +44,6 @@ After that it generates a simple wrapper Makefile.
     - [ ] --program-suffix=
     - [ ] --program-transform-name=
     - [ ] -n, --no-create
-    - [ ] --srcdir=
     - [ ] --help=short
     - [ ] --help=recursive
     - [ ] -c, --config-cache & --config-file= (if possible)
