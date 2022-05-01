@@ -27,7 +27,7 @@ is_quiet() {
 for arg; do
     case "${arg}" in
     -h|--help)
-        printf '`configure` configures %s.\n\n' "$NAME"
+        printf '`configure` configures %s.\n\n' "${PROJ_NAME}"
         cat - <<EOF
 Usage: ./configure [OPTION]... [VAL=VALUE]...
 
