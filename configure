@@ -49,6 +49,14 @@ infodir='${datarootdir}/info'
 localedir='${datarootdir}/locale'
 mandir='${datarootdir}/man'
 
+# Variables copied (stolen) from an autoconf-generated configure script.
+as_cr_letters='abcdefghijklmnopqrstuvwxyz'
+as_cr_LETTERS='ABCDEFGHIJKLMNOPQRSTUVWXYZ'
+as_cr_Letters="${as_cr_letters}${as_cr_LETTERS}"
+as_cr_digits='0123456789'
+as_cr_alnum="${as_cr_Letters}${as_cr_digits}"
+
+
 # Check for a program.
 check_for() {
     [ "${quiet}" != 1 ] && printf 'checking for %s... ' "$1" >&2
@@ -62,6 +70,10 @@ append_arg() {
 }
 is_quiet() {
     [ "${quiet}" = 1 ]
+}
+eprintf() {
+    printf "$@" >&2
+    exit 1
 }
 
 
@@ -167,7 +179,7 @@ EOF
             value=false
             ;;
         *)
-            printf "configure invalid argument %s for option %s.\n" "${ac_value}" "${arg}"
+            eprintf "configure invalid argument %s for option %s.\n" "${ac_value}" "${arg}"
             ;;
         esac
         append_arg "-D${option}=${value}"
@@ -194,9 +206,19 @@ EOF
         option="$(printf '%s\n' "${arg}" | sed 's/^--without-//')"
         append_arg "-D${option}=false"
         ;;
+    *=*)
+        name="$(printf '%s\n' "${arg}" | sed 's/^\([^=]*\)=.*$/\1/')"
+        value="$(printf '%s\n' "${arg}" | sed 's/^[^=]*=\(.*\)$/\1/')"
+        case "${name}" in
+        ''|[0-9]*|*[!${as_cr_alnum}]*)
+            eprintf 'configure: invalid variable name: %s\n' "${name}"
+            ;;
+        esac
+        eval "${name}=\${value}"
+        export "${name}"
+        ;;
     -*)
-        printf "configure: invalid option: %s\n" "${arg}" >&2
-        exit 1
+        eprintf "configure: invalid option: %s\n" "${arg}"
         ;;
     esac
 done
@@ -206,7 +228,7 @@ done
 ################################################################################
 
 # TODO: Properly check if $0 = $srcdir/configure
-[ -f "${srcdir}/configure" ] || { printf 'configure: Invalid source directory: %s\n' "${srcdir}"; exit 1; }
+[ -f "${srcdir}/configure" ] || { eprintf 'configure: Invalid source directory: %s\n' "${srcdir}"; }
 
 # Resolve and check paths.
 for name in prefix exec_prefix bindir sbindir libexecdir datarootdir    \
@@ -218,8 +240,7 @@ for name in prefix exec_prefix bindir sbindir libexecdir datarootdir    \
     [/$]*)
         ;;
     *)
-        printf 'configure: expected an absolute directory for --%s: %s\n' "${option}" "${value}" >&2
-        exit 1
+        eprintf 'configure: expected an absolute directory for --%s: %s\n' "${option}" "${value}"
         ;;
     esac
 done

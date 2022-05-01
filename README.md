@@ -47,7 +47,7 @@ After that it generates a simple wrapper Makefile.
     - [ ] --help=short
     - [ ] --help=recursive
     - [ ] -c, --config-cache & --config-file= (if possible)
-    - [ ] Allow passing environment variables (eg. `./configure CC='gcc'`)
+    - [x] Allow passing environment variables (eg. `./configure CC='gcc'`)
 - [ ] Makefile rules:
     - [x] all
     - [x] clean
