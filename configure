@@ -320,7 +320,9 @@ uninstall:
 \t\$(NINJA) uninstall
 
 dist:
+\trm -rf '${builddir}/meson-dist'
 \t\$(NINJA) dist
+\tcp -rv '${builddir}/meson-dist'/* .
 
 check:
 \t\$(NINJA) test
