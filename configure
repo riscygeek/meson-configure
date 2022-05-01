@@ -168,6 +168,7 @@ EOF
         eval "${option}=\"$(printf "%q\n" "${value}")\""
         ;;
     --enable-silent-rules|--enable-silent-rules=yes)
+        ninja_args=""
         ;;
     --disable-silent-rules|--enable-silent-rules=no)
         ninja_args="-v"
