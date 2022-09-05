@@ -20,12 +20,12 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
-# Configure PROJ_* variables for your project.
-PROJ_NAME='meson-configure-test'
-PROJ_VERSION='0.1'
+_project=$(tr '\n' ' ' <meson.build | sed 's/^.*projects\s*(\s*\([^)]*\))/\1/')
+PROJ_NAME=$(echo "$_project" | cut -d',' -f1 | sed "s/^.*'\\([^']\\+\\)'.*\$/\\1/")
+PROJ_VERSION=$(echo "$_project" | sed "s/^.*[^_]version:\\s*'\\([^']\\+\\)'.*\$/\\1/")
 
 # Internal variables.
-VERSION="0.1"
+VERSION="0.2"
 quiet=0
 ninja_args=""
 meson_args=""
