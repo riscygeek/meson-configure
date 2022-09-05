@@ -25,7 +25,7 @@ PROJ_NAME=$(echo "$_project" | cut -d',' -f1 | sed "s/^.*'\\([^']\\+\\)'.*\$/\\1
 PROJ_VERSION=$(echo "$_project" | sed "s/^.*[^_]version:\\s*'\\([^']\\+\\)'.*\$/\\1/")
 
 # Internal variables.
-VERSION="0.2"
+VERSION="0.3"
 quiet=0
 ninja_args=""
 meson_args=""
@@ -95,6 +95,7 @@ Configuration:
   -q, --quiet, --silent   do not print \`checking ...\` messages
   -n, --no-create         do not create output files
   --srcdir=DIR            find the sources in DIR
+  --update-configure      update the configure script itself
 
 Installation directories:
   --prefix=PREFIX         install files in PREFIX
@@ -214,6 +215,21 @@ EOF
         option="$(printf '%s\n' "${arg}" | sed 's/^--without-//')"
         append_arg "-D${option}=false"
         ;;
+	--update-configure)
+		set -e
+		_url="https://raw.githubusercontent.com/riscygeek/meson-configure/master/configure"
+		if command -v curl >/dev/null; then
+			curl -sLo configure.new "$_url"
+		elif command -v wget >/dev/null; then
+			wget -qO configure.newe "$_url"
+		else
+			eprintf 'configure: please make sure that either wget, or curl is installed.\n'
+			exit 1
+		fi
+		chmod +x configure.new
+		mv configure.new configure
+		exit 0
+		;;
     *=*)
         name="$(printf '%s\n' "${arg}" | sed 's/^\([^=]*\)=.*$/\1/')"
         value="$(printf '%s\n' "${arg}" | sed 's/^[^=]*=\(.*\)$/\1/')"
